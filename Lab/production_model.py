@@ -17,9 +17,9 @@ predictions_df = pd.DataFrame({
 })
 
 print(predictions_df.head())
-predictions_df.to_csv('./save/eval_df.csv', index=False)
+predictions_df.to_csv('./save/predictions.csv', index=False)
 
-# Compare the predictions with the actual values
+# Compare the predictions to the actual values
 predictions_df['actual'] = test_samples['cardio']
 predictions_df['correct'] = predictions_df['prediction'] == predictions_df['actual']
 print(f"\n{predictions_df.head()}")
