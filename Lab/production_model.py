@@ -5,7 +5,7 @@ from joblib import load
 
 # Load the data
 test_samples = pd.read_csv('./save/test_samples.csv')
-bmi_rf_clf = load('./save/best_rf_cat.pkl') 
+bmi_rf_clf = load('./save/best_rf_bmi.pkl') 
 
 probabilities = bmi_rf_clf.predict_proba(test_samples.drop(['cardio','Unnamed: 0'], axis=1))
 predictions = bmi_rf_clf.predict(test_samples.drop(['cardio','Unnamed: 0'], axis=1))
