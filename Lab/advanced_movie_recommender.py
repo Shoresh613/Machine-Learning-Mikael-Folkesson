@@ -5,10 +5,12 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 # And then to load it again when necessary
 from joblib import load
+print("Loading models and data...")
 kmeans = load('./save/kmeans_movie_clusters.pkl')
 tfidf_vectorizer = load('./save/tfidf_vectorizer.pkl')
-movie_df_with_tags = pd.read_csv('./save/movie_df_with_tags_clustered.csv') 
+movie_df_with_tags = pd.read_csv('./save/movie_df_with_tags.csv') 
 # Fit and transform the metadata to TF-IDF features
+print("Fitting and transforming metadata to TF-IDF features...\n")
 tfidf_matrix = tfidf_vectorizer.fit_transform(movie_df_with_tags['metadata'])
 
 def enter_favorite_movies():
