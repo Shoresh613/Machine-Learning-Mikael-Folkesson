@@ -1,3 +1,4 @@
+print("\n===== Advanced AI Movie Recommender System =====\n")
 import pandas as pd
 import re
 from scipy.sparse import vstack
@@ -5,6 +6,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 # And then to load it again when necessary
 from joblib import load
+
 print("Loading models and data...")
 kmeans = load('./save/kmeans_movie_clusters.pkl')
 tfidf_vectorizer = load('./save/tfidf_vectorizer.pkl')
@@ -21,7 +23,22 @@ def enter_favorite_movies():
         if title_input == "":
             break
         user_favorites_titles.append(title_input)
-    return user_favorites_titles
+    return user_favorites_titles if user_favorites_titles else -1
+
+def get_user_preferences():
+    # Prompt for a rating and convert to float
+    rating_input = input("Enter your minimum rating (as a float, [0-5], e.g., 3.5): ")
+    try:
+        rating = float(rating_input)
+    except ValueError:
+        print("Invalid rating. Setting to default 3.5.")
+        rating = 3.5
+    
+    # Prompt for keywords and split into a list
+    keywords_input = input("Enter your keywords separated by commas (e.g., space, sci-fi): ")
+    keywords = [keyword.strip() for keyword in keywords_input.split(',')] if keywords_input else []
+    
+    return rating, keywords
 
 def get_movie_indices(favorite_movie_titles):
     favorite_movie_indices = []
@@ -119,33 +136,42 @@ def get_content_based_recommendations(movie_df_with_tags, favorite_movie_titles,
     recommended_movie_titles = movie_df_with_tags.loc[recommended_movie_indices, 'title'].tolist()
     return recommended_movie_titles
 
-favorite_movie_titles = enter_favorite_movies()
-print(f"Movies entered: {', '.join(favorite_movie_titles)}\n")
+while True:
+    favorite_movie_titles = enter_favorite_movies()
+    if favorite_movie_titles == -1:
+        print("No favorite movies entered. Exiting...")
+        exit()
+    print(f"Movies entered: {', '.join(favorite_movie_titles)}\n")
 
-favorite_movie_indices = get_movie_indices(favorite_movie_titles)
+    rating, keywords = get_user_preferences()
+    print(f"Rating {rating}" + f"and containing any of the keywords:\n{', '.join(keywords)}" if keywords else "")
 
-rating=3.5
-keywords = ['space', 'sci-fi']
+    favorite_movie_indices = get_movie_indices(favorite_movie_titles)
 
-# Getting 10 movie recommendations from the content-based approach
-recommended_titles = get_content_based_recommendations(movie_df_with_tags, favorite_movie_titles, tfidf_matrix, 5, min_rating=rating, keywords=keywords)
+    # Getting 10 movie recommendations from the content-based approach
+    recommended_titles = get_content_based_recommendations(movie_df_with_tags, favorite_movie_titles, tfidf_matrix, 5, min_rating=rating, keywords=keywords)
 
-# Getting 5 movie recommendations from the cluster-based approach excluding those recommended by the content-based approach
-# With the min_rating set to a voluntary number, to also include some collaborative filtering
-kmeans_recommended_titles = recommend_movies_based_on_clusters(movie_df_with_tags, favorite_movie_indices,
-                                                                num_recommendations=5, movies_to_exclude=recommended_titles, min_rating=rating, keywords=keywords)
+    # Getting 5 movie recommendations from the cluster-based approach excluding those recommended by the content-based approach
+    # With the min_rating set to a voluntary number, to also include some collaborative filtering
+    kmeans_recommended_titles = recommend_movies_based_on_clusters(movie_df_with_tags, favorite_movie_indices,
+                                                                    num_recommendations=5, movies_to_exclude=recommended_titles, min_rating=rating, keywords=keywords)
 
 
-print("Recommended movies based on your favorites:")
-print(f"\nMost similar movies with an average rating of at least {rating}" + f"\nand containing any of the keywords: {', '.join(keywords)}" if keywords else "")
-print("===========================================================")
-for title in recommended_titles:
-    print(title)
-
-if kmeans_recommended_titles == "No recommendations found.":
-    print("\nNo recommendations found using K-Means based on the search criteria. Consider lowering the minimum rating or use more keywords.")
-else:
-    print("\nSimilar but not that similar:")
-    print("=============================")
-    for title in kmeans_recommended_titles:
+    print("Recommended movies based on your favorites:")
+    print(f"\nMost similar movies with an average rating of at least {rating}" + f" and containing any of the keywords:\n{', '.join(keywords)}" if keywords else "")
+    print("===========================================================")
+    for title in recommended_titles:
         print(title)
+
+    if kmeans_recommended_titles == "No recommendations found.":
+        print("\nNo recommendations found using K-Means based on the search criteria. Consider lowering the minimum rating or use more keywords.")
+    else:
+        print("\nSimilar but not that similar:")
+        print("=============================")
+        for title in kmeans_recommended_titles:
+            print(title)
+
+    print("\nWould you like to get more recommendations? (yes/no)")
+    more_recommendations = input()
+    if more_recommendations.lower() != 'yes':
+        break
