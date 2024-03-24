@@ -1,4 +1,5 @@
-print("\n===== Advanced AI Movie Recommender System =====\n")
+print("\n===== Advanced AI Movie Recommender System =====")
+print("\nImporting libraries...")
 import pandas as pd
 import re
 from scipy.sparse import vstack
@@ -171,7 +172,7 @@ while True:
         for title in kmeans_recommended_titles:
             print(title)
 
-    print("\nWould you like to get more recommendations? (yes/no)")
+    print("\nWould you like to search again? (yes/no)")
     more_recommendations = input()
     if more_recommendations.lower() != 'yes':
         break
